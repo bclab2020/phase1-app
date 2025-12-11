@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1 検証試験 - メカノレセプター刺激パッチ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .loader {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow);
+        }
+
+        .nav-tab:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .nav-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+        }
+
+        table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        table tr:hover {
+            background: var(--bg-color);
+        }
+
+        /* View Section */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* VAS Slider */
+        .vas-container {
+            margin-bottom: 2rem;
+        }
+
+        .vas-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .vas-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .vas-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--border-color);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .vas-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        .vas-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            border: none;
+        }
+
+        .vas-value {
+            display: inline-block;
+            margin-left: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .nav-tabs {
+                gap: 0.5rem;
+            }
+
+            .nav-tab {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        /* Analysis Results */
+        .analysis-table {
+            margin-top: 1rem;
+        }
+
+        .analysis-table table {
+            font-size: 0.9rem;
+        }
+
+        .improvement-positive {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .improvement-negative {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+        <div class="loading-text" id="loading-text">起動中...</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🏃‍♂️ Phase 1 検証試験管理システム</h1>
+            <p>メカノレセプター刺激パッチ - アスリート向け科学的検証</p>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchView('dashboard')">📊 ダッシュボード</button>
+            <button class="nav-tab" onclick="switchView('subjects')">👥 被験者管理</button>
+            <button class="nav-tab" onclick="switchView('measurements')">📝 測定データ入力</button>
+            <button class="nav-tab" onclick="switchView('history')">📈 履歴・分析</button>
+            <button class="nav-tab" onclick="switchView('export')">💾 データ出力</button>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="total-subjects">0</h3>
+                    <p>登録被験者数</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h3 id="total-measurements">0</h3>
+                    <p>総測定回数</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <h3 id="avg-improvement">0%</h3>
+                    <p>平均改善率</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">最近の測定記録</div>
+                <div class="table-container">
+                    <table id="recent-measurements-table">
+                        <thead>
+                            <tr>
+                                <th>測定日</th>
+                                <th>被験者</th>
+                                <th>パッチ</th>
+                                <th>片脚立ち</th>
+                                <th>体前屈</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem;">まだデータがありません</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects View -->
+        <div id="subjects-view" class="view-section">
+            <div class="card">
+                <div class="card-header">被験者登録</div>
+                <form id="subject-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-name">氏名 *</label>
+                            <input type="text" id="subject-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-dob">生年月日 *</label>
+                            <input type="date" id="subject-dob" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-gender">性別 *</label>
+                            <select id="subject-gender" required>
+                                <option value="">選択してください</option>
+                                <option value="male">男性</option>
+                                <option value="female">女性</option>
+                                <option value="other">その他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-sport">競技種目 *</label>
+                            <input type="text" id="subject-sport" required placeholder="例: 陸上競技（短距離）">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-height">身長 (cm)</label>
+                            <input type="number" id="subject-height" step="0.1" placeholder="170.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-weight">体重 (kg)</label>
+                            <input type="number" id="subject-weight" step="0.1" placeholder="65.0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-experience">競技歴 (年)</label>
+                            <input type="number" id="subject-experience" min="0" placeholder="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-frequency">トレーニング頻度 (週)</label>
+                            <input type="number" id="subject-frequency" min="0" max="7" placeholder="5">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-dominant-hand">利き手</label>
+                            <select id="subject-dominant-hand">
+                                <option value="right">右</option>
+                                <option value="left">左</option>
+                                <option value="both">両利き</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-dominant-foot">利き足</label>
+                            <select id="subject-dominant-foot">
+                                <option value="right">右</option>
+                                <option value="left">左</option>
+                                <option value="both">両利き</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject-injury">過去の怪我・手術歴 *</label>
+                        <select id="subject-injury-select" required>
+                            <option value="none">なし</option>
+                            <option value="has">あり</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="injury-details-group" style="display: none;">
+                        <label for="subject-injury-details">怪我・手術の詳細</label>
+                        <textarea id="subject-injury-details" rows="3" placeholder="例: 2022年3月 右膝ACL再建術"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject-pain">現在の痛み・不調</label>
+                        <textarea id="subject-pain" rows="2" placeholder="例: 腰部に軽度の違和感"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="subject-email">メールアドレス</label>
+                            <input type="email" id="subject-email" placeholder="athlete@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject-phone">電話番号</label>
+                            <input type="tel" id="subject-phone" placeholder="090-1234-5678">
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary">✅ 被験者を登録</button>
+                        <button type="reset" class="btn btn-secondary">🔄 リセット</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">登録済み被験者一覧</div>
+                <div class="table-container">
+                    <table id="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>氏名</th>
+                                <th>年齢</th>
+                                <th>性別</th>
+                                <th>競技種目</th>
+                                <th>測定回数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">まだ被験者が登録されていません</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Measurements View -->
+        <div id="measurements-view" class="view-section">
+            <div class="card">
+                <div class="card-header">測定データ入力</div>
+                <form id="measurement-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="measurement-subject">被験者選択 *</label>
+                            <select id="measurement-subject" required>
+                                <option value="">被験者を選択してください</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="measurement-date">測定日 *</label>
+                            <input type="date" id="measurement-date" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="measurement-patch">パッチパターン *</label>
+                            <select id="measurement-patch" required>
+                                <option value="baseline">ベースライン（パッチなし）</option>
+                                <option value="patternB">Pattern B（標準版: 0.5mm/324個）</option>
+                                <option value="patternC">Pattern C（高刺激版: 0.8mm/289個）</option>
+                                <option value="patternD">Pattern D（超高密度版: 0.5mm/841個）</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="measurement-position">貼付位置 *</label>
+                            <select id="measurement-position" required>
+                                <option value="none">なし（ベースライン）</option>
+                                <option value="T5-T8">T5-T8（胸椎中部）</option>
+                                <option value="L4-S1">L4-S1（腰仙部）</option>
+                                <option value="both">両方（T5-T8 + L4-S1）</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin-top: 2rem;">評価項目</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="single-leg-open">片脚立ち 開眼 (秒) *</label>
+                            <input type="number" id="single-leg-open" step="0.1" required placeholder="60.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="single-leg-closed">片脚立ち 閉眼 (秒) *</label>
+                            <input type="number" id="single-leg-closed" step="0.1" required placeholder="28.3">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="forward-bend">長座体前屈 (cm) *</label>
+                        <input type="number" id="forward-bend" step="0.1" required placeholder="45.5">
+                    </div>
+
+                    <div class="card-header" style="margin-top: 1.5rem; font-size: 1.2rem;">Y-Balance Test</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="y-balance-anterior">前方 (cm) *</label>
+                            <input type="number" id="y-balance-anterior" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="y-balance-posteromedial">後内方 (cm) *</label>
+                            <input type="number" id="y-balance-posteromedial" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="y-balance-posterolateral">後外方 (cm) *</label>
+                            <input type="number" id="y-balance-posterolateral" step="0.1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="plank-time">プランク保持時間 (秒) *</label>
+                            <input type="number" id="plank-time" step="0.1" required placeholder="120.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="vertical-jump">垂直跳び高 (cm) *</label>
+                            <input type="number" id="vertical-jump" step="0.1" required placeholder="58.5">
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin-top: 2rem;">VAS評価（0-10スライダー）</div>
+                    <div class="vas-container">
+                        <div class="vas-item">
+                            <label>姿勢の安定感 <span class="vas-value" id="vas1-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas1" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>体の柔軟性 <span class="vas-value" id="vas2-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas2" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>バランス感覚 <span class="vas-value" id="vas3-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas3" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>体幹の安定性 <span class="vas-value" id="vas4-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas4" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>動きの軽快さ <span class="vas-value" id="vas5-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas5" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>疲労感 <span class="vas-value" id="vas6-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas6" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>痛み・不快感 <span class="vas-value" id="vas7-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas7" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>パフォーマンス満足度 <span class="vas-value" id="vas8-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas8" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>集中力 <span class="vas-value" id="vas9-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas9" min="0" max="10" value="5">
+                        </div>
+                        <div class="vas-item">
+                            <label>全体的なコンディション <span class="vas-value" id="vas10-value">5</span></label>
+                            <input type="range" class="vas-slider" id="vas10" min="0" max="10" value="5">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="measurement-notes">メモ・特記事項</label>
+                        <textarea id="measurement-notes" rows="3" placeholder="例: 測定前日にハードトレーニング実施"></textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-success">💾 測定データを保存</button>
+                        <button type="reset" class="btn btn-secondary">🔄 リセット</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- History View -->
+        <div id="history-view" class="view-section">
+            <div class="card">
+                <div class="card-header">測定履歴検索</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="history-subject-filter">被験者フィルタ</label>
+                        <select id="history-subject-filter">
+                            <option value="">全被験者</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="history-patch-filter">パッチフィルタ</label>
+                        <select id="history-patch-filter">
+                            <option value="">全パターン</option>
+                            <option value="baseline">ベースライン</option>
+                            <option value="patternB">Pattern B</option>
+                            <option value="patternC">Pattern C</option>
+                            <option value="patternD">Pattern D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" onclick="filterHistory()">🔍 検索</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">測定履歴一覧</div>
+                <div class="table-container">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>測定日</th>
+                                <th>被験者</th>
+                                <th>パッチ</th>
+                                <th>貼付位置</th>
+                                <th>片脚立ち(閉眼)</th>
+                                <th>体前屈</th>
+                                <th>プランク</th>
+                                <th>垂直跳び</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="9" style="text-align: center; padding: 2rem;">まだ測定データがありません</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">個別分析（被験者選択）</div>
+                <div class="form-group">
+                    <label for="analysis-subject-select">被験者を選択</label>
+                    <select id="analysis-subject-select">
+                        <option value="">選択してください</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="showIndividualAnalysis()">📊 分析を表示</button>
+                
+                <div id="analysis-results" style="display: none; margin-top: 2rem;" class="analysis-table">
+                    <div class="card-header">改善率分析（ベースライン比較）</div>
+                    <div class="table-container">
+                        <table id="improvement-table">
+                            <thead>
+                                <tr>
+                                    <th>測定日</th>
+                                    <th>パッチ</th>
+                                    <th>片脚立ち改善率</th>
+                                    <th>体前屈改善率</th>
+                                    <th>プランク改善率</th>
+                                    <th>垂直跳び改善率</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export View -->
+        <div id="export-view" class="view-section">
+            <div class="card">
+                <div class="card-header">データ出力</div>
+                
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">📊 CSV出力</h3>
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">統計解析用の生データをCSV形式でエクスポート</p>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="exportSubjectsCSV()">👥 被験者データCSV</button>
+                    <button class="btn btn-primary" onclick="exportMeasurementsCSV()">📝 測定データCSV</button>
+                    <button class="btn btn-success" onclick="exportAllDataCSV()">💾 全データ統合CSV</button>
+                </div>
+
+                <hr style="margin: 2rem 0; border: none; border-top: 2px solid var(--border-color);">
+
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">🔄 データ管理</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ 全データ削除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Subject Details -->
+    <div id="subject-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">被験者詳細情報</div>
+            <div id="subject-modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database
+        let db = null;
+
+        // Initialize IndexedDB - 最もシンプルな実装
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                try {
+                    const request = indexedDB.open('Phase1TrialDB', 1);
+
+                    request.onerror = () => {
+                        reject(new Error('IndexedDB接続エラー'));
+                    };
+
+                    request.onsuccess = (event) => {
+                        db = event.target.result;
+                        resolve(db);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const database = event.target.result;
+
+                        if (!database.objectStoreNames.contains('subjects')) {
+                            const subjectStore = database.createObjectStore('subjects', { 
+                                keyPath: 'id', 
+                                autoIncrement: true 
+                            });
+                            subjectStore.createIndex('name', 'name', { unique: false });
+                        }
+
+                        if (!database.objectStoreNames.contains('measurements')) {
+                            const measurementStore = database.createObjectStore('measurements', { 
+                                keyPath: 'id', 
+                                autoIncrement: true 
+                            });
+                            measurementStore.createIndex('subjectId', 'subjectId', { unique: false });
+                        }
+                    };
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // CRUD Operations
+        function addSubject(data) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['subjects'], 'readwrite');
+                const request = tx.objectStore('subjects').add(data);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getAllSubjects() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['subjects'], 'readonly');
+                const request = tx.objectStore('subjects').getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function addMeasurement(data) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['measurements'], 'readwrite');
+                const request = tx.objectStore('measurements').add(data);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getAllMeasurements() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['measurements'], 'readonly');
+                const request = tx.objectStore('measurements').getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function getMeasurementsBySubject(subjectId) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(['measurements'], 'readonly');
+                const index = tx.objectStore('measurements').index('subjectId');
+                const request = index.getAll(subjectId);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // View switching
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+            document.getElementById(`${viewName}-view`).classList.add('active');
+            event.target.classList.add('active');
+
+            if (viewName === 'dashboard') updateDashboard();
+            else if (viewName === 'subjects') loadSubjectsTable();
+            else if (viewName === 'measurements') loadSubjectSelectOptions();
+            else if (viewName === 'history') { loadHistoryTable(); loadHistoryFilters(); }
+            else if (viewName === 'export') loadExportSelects();
+        }
+
+        // Helper functions
+        function calculateAge(dob) {
+            const today = new Date();
+            const birth = new Date(dob);
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            return age;
+        }
+
+        function getGenderLabel(gender) {
+            return { male: '男性', female: '女性', other: 'その他' }[gender] || gender;
+        }
+
+        function getPatchLabel(pattern) {
+            return {
+                baseline: 'ベースライン',
+                patternB: 'Pattern B',
+                patternC: 'Pattern C',
+                patternD: 'Pattern D'
+            }[pattern] || pattern;
+        }
+
+        function showAlert(type, message) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            document.querySelector('.container').insertBefore(alert, document.querySelector('.container').firstChild);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Dashboard
+        async function updateDashboard() {
+            const subjects = await getAllSubjects();
+            const measurements = await getAllMeasurements();
+
+            document.getElementById('total-subjects').textContent = subjects.length;
+            document.getElementById('total-measurements').textContent = measurements.length;
+
+            const tbody = document.querySelector('#recent-measurements-table tbody');
+            if (measurements.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">まだデータがありません</td></tr>';
+                return;
+            }
+
+            const recent = measurements.slice(-5).reverse();
+            tbody.innerHTML = recent.map(m => {
+                const subject = subjects.find(s => s.id === m.subjectId);
+                return `<tr>
+                    <td>${m.measurementDate}</td>
+                    <td>${subject ? subject.name : 'Unknown'}</td>
+                    <td>${getPatchLabel(m.patchPattern)}</td>
+                    <td>${m.singleLegClosed}秒</td>
+                    <td>${m.forwardBend}cm</td>
+                    <td><button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.9rem;" onclick="viewSubjectDetails(${m.subjectId})">詳細</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Subjects
+        async function loadSubjectsTable() {
+            const subjects = await getAllSubjects();
+            const tbody = document.querySelector('#subjects-table tbody');
+
+            if (subjects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">まだ被験者が登録されていません</td></tr>';
+                return;
+            }
+
+            for (const s of subjects) {
+                const measurements = await getMeasurementsBySubject(s.id);
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${calculateAge(s.dateOfBirth)}歳</td>
+                    <td>${getGenderLabel(s.gender)}</td>
+                    <td>${s.sport}</td>
+                    <td>${measurements.length}</td>
+                    <td><button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.9rem;" onclick="viewSubjectDetails(${s.id})">詳細</button></td>
+                `;
+            }
+        }
+
+        async function loadSubjectSelectOptions() {
+            const subjects = await getAllSubjects();
+            const select = document.getElementById('measurement-subject');
+            select.innerHTML = '<option value="">被験者を選択してください</option>' +
+                subjects.map(s => `<option value="${s.id}">${s.name} (${s.sport})</option>`).join('');
+        }
+
+        // History
+        async function loadHistoryTable() {
+            const measurements = await getAllMeasurements();
+            const subjects = await getAllSubjects();
+            const tbody = document.querySelector('#history-table tbody');
+
+            if (measurements.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;">まだ測定データがありません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = measurements.map(m => {
+                const subject = subjects.find(s => s.id === m.subjectId);
+                return `<tr>
+                    <td>${m.measurementDate}</td>
+                    <td>${subject ? subject.name : 'Unknown'}</td>
+                    <td>${getPatchLabel(m.patchPattern)}</td>
+                    <td>${m.patchPosition}</td>
+                    <td>${m.singleLegClosed}秒</td>
+                    <td>${m.forwardBend}cm</td>
+                    <td>${m.plankTime}秒</td>
+                    <td>${m.verticalJump}cm</td>
+                    <td><button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.9rem;">詳細</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function loadHistoryFilters() {
+            const subjects = await getAllSubjects();
+            document.getElementById('history-subject-filter').innerHTML = 
+                '<option value="">全被験者</option>' + subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            document.getElementById('analysis-subject-select').innerHTML = 
+                '<option value="">選択してください</option>' + subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
+        async function filterHistory() {
+            const subjectFilter = document.getElementById('history-subject-filter').value;
+            const patchFilter = document.getElementById('history-patch-filter').value;
+            let measurements = await getAllMeasurements();
+            const subjects = await getAllSubjects();
+
+            if (subjectFilter) measurements = measurements.filter(m => m.subjectId === parseInt(subjectFilter));
+            if (patchFilter) measurements = measurements.filter(m => m.patchPattern === patchFilter);
+
+            const tbody = document.querySelector('#history-table tbody');
+            if (measurements.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 2rem;">条件に一致するデータがありません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = measurements.map(m => {
+                const subject = subjects.find(s => s.id === m.subjectId);
+                return `<tr>
+                    <td>${m.measurementDate}</td>
+                    <td>${subject ? subject.name : 'Unknown'}</td>
+                    <td>${getPatchLabel(m.patchPattern)}</td>
+                    <td>${m.patchPosition}</td>
+                    <td>${m.singleLegClosed}秒</td>
+                    <td>${m.forwardBend}cm</td>
+                    <td>${m.plankTime}秒</td>
+                    <td>${m.verticalJump}cm</td>
+                    <td><button class="btn btn-primary" style="padding:0.5rem 1rem;font-size:0.9rem;">詳細</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        // Analysis
+        async function showIndividualAnalysis() {
+            const subjectId = parseInt(document.getElementById('analysis-subject-select').value);
+            if (!subjectId) {
+                showAlert('error', '被験者を選択してください');
+                return;
+            }
+
+            const measurements = await getMeasurementsBySubject(subjectId);
+            if (measurements.length < 2) {
+                showAlert('error', 'この被験者の測定データが不足しています（最低2回必要）');
+                return;
+            }
+
+            const baseline = measurements.find(m => m.patchPattern === 'baseline');
+            if (!baseline) {
+                showAlert('error', 'ベースラインデータがありません');
+                return;
+            }
+
+            const interventions = measurements.filter(m => m.patchPattern !== 'baseline');
+            const tbody = document.querySelector('#improvement-table tbody');
+
+            tbody.innerHTML = interventions.map(m => {
+                const calc = (val, base) => base !== 0 ? ((val - base) / base * 100).toFixed(1) : '0.0';
+                const cls = (val) => parseFloat(val) >= 0 ? 'improvement-positive' : 'improvement-negative';
+                
+                const singleLeg = calc(m.singleLegClosed, baseline.singleLegClosed);
+                const bend = calc(m.forwardBend, baseline.forwardBend);
+                const plank = calc(m.plankTime, baseline.plankTime);
+                const jump = calc(m.verticalJump, baseline.verticalJump);
+
+                return `<tr>
+                    <td>${m.measurementDate}</td>
+                    <td>${getPatchLabel(m.patchPattern)}</td>
+                    <td class="${cls(singleLeg)}">${singleLeg}%</td>
+                    <td class="${cls(bend)}">${bend}%</td>
+                    <td class="${cls(plank)}">${plank}%</td>
+                    <td class="${cls(jump)}">${jump}%</td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('analysis-results').style.display = 'block';
+        }
+
+        // Export
+        async function loadExportSelects() {
+            // 現在は不要
+        }
+
+        async function exportSubjectsCSV() {
+            const subjects = await getAllSubjects();
+            const headers = ['ID','氏名','生年月日','年齢','性別','競技種目','身長(cm)','体重(kg)','BMI','競技歴(年)','トレーニング頻度(週)','利き手','利き足','怪我歴','怪我詳細','現在の痛み','メール','電話','登録日'];
+            const rows = subjects.map(s => {
+                const bmi = s.height && s.weight ? (s.weight / Math.pow(s.height/100, 2)).toFixed(1) : '';
+                return [s.id,s.name,s.dateOfBirth,calculateAge(s.dateOfBirth),getGenderLabel(s.gender),s.sport,s.height||'',s.weight||'',bmi,s.experience||'',s.trainingFrequency||'',s.dominantHand,s.dominantFoot,s.hasInjury?'あり':'なし',s.injuryDetails||'',s.currentPain||'',s.email||'',s.phone||'',s.registrationDate.split('T')[0]];
+            });
+            downloadCSV('被験者データ.csv', [headers, ...rows]);
+        }
+
+        async function exportMeasurementsCSV() {
+            const measurements = await getAllMeasurements();
+            const subjects = await getAllSubjects();
+            const headers = ['測定ID','被験者ID','被験者名','測定日','パッチパターン','貼付位置','片脚立ち開眼(秒)','片脚立ち閉眼(秒)','長座体前屈(cm)','Y-Balance前方(cm)','Y-Balance後内方(cm)','Y-Balance後外方(cm)','プランク(秒)','垂直跳び(cm)','VAS姿勢','VAS柔軟性','VASバランス','VAS体幹','VAS軽快さ','VAS疲労','VAS痛み','VAS満足度','VAS集中力','VAS全体','メモ','登録日時'];
+            const rows = measurements.map(m => {
+                const s = subjects.find(x => x.id === m.subjectId);
+                return [m.id,m.subjectId,s?s.name:'',m.measurementDate,getPatchLabel(m.patchPattern),m.patchPosition,m.singleLegOpen,m.singleLegClosed,m.forwardBend,m.yBalanceAnterior,m.yBalancePosteromedial,m.yBalancePosterolateral,m.plankTime,m.verticalJump,m.vas.posture,m.vas.flexibility,m.vas.balance,m.vas.coreStability,m.vas.agility,m.vas.fatigue,m.vas.pain,m.vas.satisfaction,m.vas.concentration,m.vas.overallCondition,m.notes||'',m.createdAt.split('T')[0]];
+            });
+            downloadCSV('測定データ.csv', [headers, ...rows]);
+        }
+
+        async function exportAllDataCSV() {
+            const measurements = await getAllMeasurements();
+            const subjects = await getAllSubjects();
+            const headers = ['測定ID','被験者ID','被験者名','年齢','性別','競技種目','測定日','パッチパターン','貼付位置','片脚立ち開眼(秒)','片脚立ち閉眼(秒)','長座体前屈(cm)','Y-Balance前方(cm)','Y-Balance後内方(cm)','Y-Balance後外方(cm)','プランク(秒)','垂直跳び(cm)','VAS姿勢','VAS柔軟性','VASバランス','VAS体幹','VAS軽快さ','VAS疲労','VAS痛み','VAS満足度','VAS集中力','VAS全体','片脚立ち改善率(%)','体前屈改善率(%)','プランク改善率(%)','垂直跳び改善率(%)'];
+            const rows = measurements.map(m => {
+                const s = subjects.find(x => x.id === m.subjectId);
+                const subjectMeasurements = measurements.filter(x => x.subjectId === m.subjectId);
+                const baseline = subjectMeasurements.find(x => x.patchPattern === 'baseline');
+                let imp = ['','','',''];
+                if (baseline && m.patchPattern !== 'baseline') {
+                    imp = [
+                        ((m.singleLegClosed-baseline.singleLegClosed)/baseline.singleLegClosed*100).toFixed(1),
+                        ((m.forwardBend-baseline.forwardBend)/baseline.forwardBend*100).toFixed(1),
+                        ((m.plankTime-baseline.plankTime)/baseline.plankTime*100).toFixed(1),
+                        ((m.verticalJump-baseline.verticalJump)/baseline.verticalJump*100).toFixed(1)
+                    ];
+                }
+                return [m.id,m.subjectId,s?s.name:'',s?calculateAge(s.dateOfBirth):'',s?getGenderLabel(s.gender):'',s?s.sport:'',m.measurementDate,getPatchLabel(m.patchPattern),m.patchPosition,m.singleLegOpen,m.singleLegClosed,m.forwardBend,m.yBalanceAnterior,m.yBalancePosteromedial,m.yBalancePosterolateral,m.plankTime,m.verticalJump,m.vas.posture,m.vas.flexibility,m.vas.balance,m.vas.coreStability,m.vas.agility,m.vas.fatigue,m.vas.pain,m.vas.satisfaction,m.vas.concentration,m.vas.overallCondition,...imp];
+            });
+            downloadCSV('Phase1_全データ統合.csv', [headers, ...rows]);
+        }
+
+        function downloadCSV(filename, rows) {
+            const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            showAlert('success', `${filename} をダウンロードしました`);
+        }
+
+        // Modal
+        function closeModal() {
+            document.getElementById('subject-modal').classList.remove('active');
+        }
+
+        async function viewSubjectDetails(subjectId) {
+            const subjects = await getAllSubjects();
+            const subject = subjects.find(s => s.id === subjectId);
+            if (!subject) return;
+
+            const measurements = await getMeasurementsBySubject(subjectId);
+            const bmi = subject.height && subject.weight ? (subject.weight/Math.pow(subject.height/100,2)).toFixed(1) : 'N/A';
+            
+            document.getElementById('subject-modal-body').innerHTML = `
+                <div style="line-height:2;">
+                    <p><strong>ID:</strong> ${subject.id}</p>
+                    <p><strong>氏名:</strong> ${subject.name}</p>
+                    <p><strong>生年月日:</strong> ${subject.dateOfBirth} (${calculateAge(subject.dateOfBirth)}歳)</p>
+                    <p><strong>性別:</strong> ${getGenderLabel(subject.gender)}</p>
+                    <p><strong>競技種目:</strong> ${subject.sport}</p>
+                    <p><strong>身長/体重:</strong> ${subject.height||'N/A'}cm / ${subject.weight||'N/A'}kg (BMI: ${bmi})</p>
+                    <p><strong>競技歴:</strong> ${subject.experience||'N/A'}年</p>
+                    <p><strong>トレーニング頻度:</strong> 週${subject.trainingFrequency||'N/A'}回</p>
+                    <p><strong>利き手/利き足:</strong> ${subject.dominantHand} / ${subject.dominantFoot}</p>
+                    <p><strong>怪我・手術歴:</strong> ${subject.hasInjury?'あり':'なし'}</p>
+                    ${subject.injuryDetails?`<p><strong>詳細:</strong> ${subject.injuryDetails}</p>`:''}
+                    ${subject.currentPain?`<p><strong>現在の痛み:</strong> ${subject.currentPain}</p>`:''}
+                    ${subject.email?`<p><strong>Email:</strong> ${subject.email}</p>`:''}
+                    ${subject.phone?`<p><strong>電話:</strong> ${subject.phone}</p>`:''}
+                    <p><strong>登録日:</strong> ${subject.registrationDate.split('T')[0]}</p>
+                    <p><strong>測定回数:</strong> ${measurements.length}回</p>
+                </div>
+            `;
+            document.getElementById('subject-modal').classList.add('active');
+        }
+
+        // Data management
+        function clearAllData() {
+            if (!confirm('⚠️ 警告: すべてのデータが削除されます。この操作は取り消せません。本当に実行しますか?')) return;
+            if (!confirm('最終確認: 本当にすべてのデータを削除しますか?')) return;
+
+            const tx = db.transaction(['subjects', 'measurements'], 'readwrite');
+            tx.objectStore('subjects').clear();
+            tx.objectStore('measurements').clear();
+            tx.oncomplete = () => {
+                showAlert('success', 'すべてのデータを削除しました');
+                updateDashboard();
+                loadSubjectsTable();
+                loadHistoryTable();
+            };
+        }
+
+        // Form handlers
+        document.getElementById('subject-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addSubject({
+                    name: document.getElementById('subject-name').value,
+                    dateOfBirth: document.getElementById('subject-dob').value,
+                    gender: document.getElementById('subject-gender').value,
+                    sport: document.getElementById('subject-sport').value,
+                    height: parseFloat(document.getElementById('subject-height').value) || null,
+                    weight: parseFloat(document.getElementById('subject-weight').value) || null,
+                    experience: parseInt(document.getElementById('subject-experience').value) || null,
+                    trainingFrequency: parseInt(document.getElementById('subject-frequency').value) || null,
+                    dominantHand: document.getElementById('subject-dominant-hand').value,
+                    dominantFoot: document.getElementById('subject-dominant-foot').value,
+                    hasInjury: document.getElementById('subject-injury-select').value === 'has',
+                    injuryDetails: document.getElementById('subject-injury-details').value || null,
+                    currentPain: document.getElementById('subject-pain').value || null,
+                    email: document.getElementById('subject-email').value || null,
+                    phone: document.getElementById('subject-phone').value || null,
+                    registrationDate: new Date().toISOString()
+                });
+                showAlert('success', '被験者を登録しました');
+                e.target.reset();
+                loadSubjectsTable();
+            } catch (error) {
+                showAlert('error', '登録に失敗しました');
+            }
+        });
+
+        document.getElementById('subject-injury-select').addEventListener('change', (e) => {
+            document.getElementById('injury-details-group').style.display = e.target.value === 'has' ? 'block' : 'none';
+        });
+
+        for (let i = 1; i <= 10; i++) {
+            const slider = document.getElementById(`vas${i}`);
+            const value = document.getElementById(`vas${i}-value`);
+            slider.addEventListener('input', (e) => value.textContent = e.target.value);
+        }
+
+        document.getElementById('measurement-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addMeasurement({
+                    subjectId: parseInt(document.getElementById('measurement-subject').value),
+                    measurementDate: document.getElementById('measurement-date').value,
+                    patchPattern: document.getElementById('measurement-patch').value,
+                    patchPosition: document.getElementById('measurement-position').value,
+                    singleLegOpen: parseFloat(document.getElementById('single-leg-open').value),
+                    singleLegClosed: parseFloat(document.getElementById('single-leg-closed').value),
+                    forwardBend: parseFloat(document.getElementById('forward-bend').value),
+                    yBalanceAnterior: parseFloat(document.getElementById('y-balance-anterior').value),
+                    yBalancePosteromedial: parseFloat(document.getElementById('y-balance-posteromedial').value),
+                    yBalancePosterolateral: parseFloat(document.getElementById('y-balance-posterolateral').value),
+                    plankTime: parseFloat(document.getElementById('plank-time').value),
+                    verticalJump: parseFloat(document.getElementById('vertical-jump').value),
+                    vas: {
+                        posture: parseInt(document.getElementById('vas1').value),
+                        flexibility: parseInt(document.getElementById('vas2').value),
+                        balance: parseInt(document.getElementById('vas3').value),
+                        coreStability: parseInt(document.getElementById('vas4').value),
+                        agility: parseInt(document.getElementById('vas5').value),
+                        fatigue: parseInt(document.getElementById('vas6').value),
+                        pain: parseInt(document.getElementById('vas7').value),
+                        satisfaction: parseInt(document.getElementById('vas8').value),
+                        concentration: parseInt(document.getElementById('vas9').value),
+                        overallCondition: parseInt(document.getElementById('vas10').value)
+                    },
+                    notes: document.getElementById('measurement-notes').value || null,
+                    createdAt: new Date().toISOString()
+                });
+                showAlert('success', '測定データを保存しました');
+                e.target.reset();
+                for (let i = 1; i <= 10; i++) {
+                    document.getElementById(`vas${i}`).value = 5;
+                    document.getElementById(`vas${i}-value`).textContent = '5';
+                }
+            } catch (error) {
+                showAlert('error', '保存に失敗しました');
+            }
+        });
+
+        document.getElementById('subject-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'subject-modal') closeModal();
+        });
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            const overlay = document.getElementById('loading-overlay');
+            const text = document.getElementById('loading-text');
+
+            try {
+                text.textContent = 'データベースを準備中...';
+                await initDB();
+                
+                text.textContent = '初期データを読み込み中...';
+                document.getElementById('measurement-date').value = new Date().toISOString().split('T')[0];
+                await updateDashboard();
+                
+                text.textContent = '完了！';
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                text.textContent = '初期化に失敗しました';
+                text.style.color = 'var(--danger-color)';
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    showAlert('error', 'アプリの起動に失敗しました。ブラウザのプライベートモードをオフにして、ページをリロードしてください。');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
