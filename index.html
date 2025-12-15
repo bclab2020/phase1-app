@@ -531,6 +531,42 @@
             margin-bottom: 0;
         }
 
+        /* 削除ボタンスタイル */
+        .btn-delete {
+            background: #c41e3a;
+            color: #ffffff;
+            padding: 8px 16px;
+            font-size: 11px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .btn-delete:hover {
+            background: #a01828;
+            transform: translateY(-1px);
+        }
+
+        .btn-link {
+            background: transparent;
+            color: #1a1a1a;
+            padding: 10px 20px;
+            border: 2px solid #1a1a1a;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-link:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
     </style>
 </head>
 <body>
@@ -567,6 +603,10 @@
                     <h3>Average Improvement<span style="font-size: 8px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">平均改善率</span></h3>
                     <p id="avgImprovement">—</p>
                 </div>
+            </div>
+            
+            <div style="margin-top: 40px;">
+                <button class="btn-link" onclick="scrollToSection('subjects')">📋 View Registered Subjects<span style="font-size: 9px; display: block; margin-top: 3px; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">登録済み被験者一覧を見る</span></button>
             </div>
         </div>
 
@@ -669,6 +709,7 @@
                             <th>Hand<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">利き手</span></th>
                             <th>Foot<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">利き足</span></th>
                             <th>Issues<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">課題</span></th>
+                            <th>Action<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">操作</span></th>
                         </tr>
                     </thead>
                     <tbody id="subjectsTableBody"></tbody>
@@ -1511,6 +1552,43 @@
             document.getElementById('improvementGoals').value = '';
         }
 
+        // 被験者削除
+        function deleteSubject(subjectId) {
+            if (!confirm(`被験者 ${subjectId} を削除しますか？\n\n注意: この被験者に紐づく測定データも全て削除されます。`)) {
+                return;
+            }
+
+            const tx = db.transaction(['subjects', 'measurements'], 'readwrite');
+            
+            // 被験者を削除
+            tx.objectStore('subjects').delete(subjectId);
+            
+            // 関連する測定データも削除
+            const measurementStore = tx.objectStore('measurements');
+            const index = measurementStore.index('subjectId');
+            const range = IDBKeyRange.only(subjectId);
+            
+            index.openCursor(range).onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    cursor.delete();
+                    cursor.continue();
+                }
+            };
+
+            tx.oncomplete = () => {
+                showAlert(`被験者 ${subjectId} を削除しました。`);
+                loadSubjects();
+                loadDashboard();
+                loadHistory();
+                calculateAnalysis();
+            };
+
+            tx.onerror = () => {
+                showAlert('削除に失敗しました。', 'error');
+            };
+        }
+
         // 被験者一覧読込
         function loadSubjects() {
             if (!dbReady) return;
@@ -1536,6 +1614,7 @@
                             <td>${s.dominantHand || '—'}</td>
                             <td>${s.dominantFoot || '—'}</td>
                             <td title="${s.physicalIssues || ''}">${shortIssues}</td>
+                            <td><button class="btn-delete" onclick="deleteSubject('${s.id}')">Delete</button></td>
                         </tr>
                     `;
                     select.innerHTML += `<option value="${s.id}">${s.id} — ${s.name}</option>`;
@@ -1599,13 +1678,30 @@
             };
 
             const tx = db.transaction(['measurements'], 'readwrite');
-            tx.objectStore('measurements').add(measurement).onsuccess = () => {
+            const request = tx.objectStore('measurements').add(measurement);
+            
+            request.onsuccess = () => {
+                console.log('測定データが保存されました');
+            };
+            
+            request.onerror = (e) => {
+                console.error('保存エラー:', e.target.error);
+                showAlert('Failed to save measurement.', 'error');
+            };
+            
+            tx.oncomplete = () => {
+                console.log('トランザクション完了 - データ更新中');
                 showAlert('Measurement saved successfully.');
                 clearMeasurementForm();
                 loadDashboard();
                 loadHistory();
                 calculateAnalysis();
                 scrollToSection('dashboard');
+            };
+            
+            tx.onerror = (e) => {
+                console.error('トランザクションエラー:', e.target.error);
+                showAlert('Transaction failed.', 'error');
             };
         }
 
