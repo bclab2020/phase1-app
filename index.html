@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phase 1 検証試験管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -575,6 +576,164 @@
         .btn-link:hover {
             background: #1a1a1a;
             color: #ffffff;
+        }
+
+        /* 評価シートスタイル */
+        .report-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .report-container.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .report-sheet {
+            background: #ffffff;
+            width: 1920px;
+            height: 1080px;
+            padding: 60px 80px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a1a1a;
+        }
+
+        .report-title {
+            font-size: 32px;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: #1a1a1a;
+        }
+
+        .report-subject-info {
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .report-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .report-section {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .report-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 8px;
+        }
+
+        .report-chart {
+            height: 300px;
+            position: relative;
+        }
+
+        .report-data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .report-data-item {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 2px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .report-data-label {
+            font-size: 11px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .report-data-value {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .report-improvement {
+            font-size: 12px;
+            color: #2d7a3e;
+            margin-top: 3px;
+        }
+
+        .report-improvement.negative {
+            color: #c41e3a;
+        }
+
+        .report-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        .report-actions {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .report-actions button {
+            margin-left: 10px;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .report-sheet, .report-sheet * {
+                visibility: visible;
+            }
+            .report-sheet {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .report-close, .report-actions {
+                display: none;
+            }
         }
 
     </style>
@@ -1624,7 +1783,10 @@
                             <td>${s.dominantHand || '—'}</td>
                             <td>${s.dominantFoot || '—'}</td>
                             <td title="${s.physicalIssues || ''}">${shortIssues}</td>
-                            <td><button class="btn-delete" onclick="deleteSubject('${s.id}')" title="削除"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg></button></td>
+                            <td>
+                                <button class="btn-link" onclick="generateReport('${s.id}')" title="評価シート" style="padding: 6px 12px; font-size: 11px; margin-right: 5px;">📊 Report</button>
+                                <button class="btn-delete" onclick="deleteSubject('${s.id}')" title="削除"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg></button>
+                            </td>
                         </tr>
                     `;
                     select.innerHTML += `<option value="${s.id}">${s.id} — ${s.name}</option>`;
@@ -1992,6 +2154,277 @@
             } else {
                 toggle.querySelector('.toggle-text').textContent = '詳細を見る';
             }
+        }
+
+        // 評価シート生成
+        async function generateReport(subjectId) {
+            const tx = db.transaction(['subjects', 'measurements'], 'readonly');
+            const subject = await new Promise((resolve) => {
+                tx.objectStore('subjects').get(subjectId).onsuccess = (e) => resolve(e.target.result);
+            });
+
+            if (!subject) {
+                showAlert('被験者が見つかりません。', 'error');
+                return;
+            }
+
+            const measurements = await new Promise((resolve) => {
+                const results = [];
+                const index = tx.objectStore('measurements').index('subjectId');
+                index.openCursor(IDBKeyRange.only(subjectId)).onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        results.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        resolve(results.sort((a, b) => new Date(a.date) - new Date(b.date)));
+                    }
+                };
+            });
+
+            if (measurements.length === 0) {
+                showAlert('測定データがありません。', 'error');
+                return;
+            }
+
+            showReportSheet(subject, measurements);
+        }
+
+        function showReportSheet(subject, measurements) {
+            const latest = measurements[measurements.length - 1];
+            const first = measurements[0];
+
+            const reportHTML = `
+                <div class="report-container active" id="reportContainer">
+                    <div class="report-sheet">
+                        <button class="report-close" onclick="closeReport()">× Close</button>
+                        
+                        <div class="report-header">
+                            <div>
+                                <div class="report-title">Performance Evaluation Report</div>
+                                <div style="font-size: 14px; color: #666; margin-top: 8px;">パフォーマンス評価レポート</div>
+                            </div>
+                            <div class="report-subject-info">
+                                <div><strong>Subject ID:</strong> ${subject.id}</div>
+                                <div><strong>Name:</strong> ${subject.name}</div>
+                                <div><strong>Sport:</strong> ${subject.sport || '—'}</div>
+                                <div><strong>Gender:</strong> ${subject.gender || '—'}</div>
+                                <div><strong>Report Date:</strong> ${new Date().toLocaleDateString('ja-JP')}</div>
+                                <div><strong>Measurements:</strong> ${measurements.length} sessions</div>
+                            </div>
+                        </div>
+
+                        <div class="report-content">
+                            <div class="report-section">
+                                <h3>📊 Physical Performance Metrics</h3>
+                                <div class="report-chart">
+                                    <canvas id="radarChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="report-section">
+                                <h3>📈 Progress Tracking</h3>
+                                <div class="report-chart">
+                                    <canvas id="lineChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="report-section">
+                                <h3>📊 Key Performance Indicators</h3>
+                                <div class="report-data-grid">
+                                    ${generateKPICards(first, latest)}
+                                </div>
+                            </div>
+
+                            <div class="report-section">
+                                <h3>🎯 Subjective Assessment (VAS)</h3>
+                                <div class="report-chart">
+                                    <canvas id="barChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 4px;">
+                            <h4 style="margin-bottom: 10px; font-size: 14px;">📝 Physical Issues & Goals</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 13px;">
+                                <div>
+                                    <strong>Issues:</strong><br>
+                                    ${subject.physicalIssues || '—'}
+                                </div>
+                                <div>
+                                    <strong>Goals:</strong><br>
+                                    ${subject.improvementGoals || '—'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button onclick="window.print()">🖨️ Print Report</button>
+                            <button onclick="closeReport()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', reportHTML);
+
+            setTimeout(() => {
+                createRadarChart(latest);
+                createLineChart(measurements);
+                createBarChart(latest);
+            }, 100);
+        }
+
+        function generateKPICards(first, latest) {
+            const kpis = [
+                { label: 'Single Leg Stand', key: 'singleLegStand', unit: 'sec' },
+                { label: 'Y-Balance Ant.', key: 'yBalanceAnt', unit: 'cm' },
+                { label: 'Plank Time', key: 'plankTime', unit: 'sec' },
+                { label: 'Vertical Jump', key: 'verticalJump', unit: 'cm' },
+                { label: 'VAS Pain', key: 'vasPain', unit: '', inverse: true },
+                { label: 'VAS Performance', key: 'vasPerformance', unit: '' }
+            ];
+
+            return kpis.map(kpi => {
+                const firstVal = first[kpi.key];
+                const latestVal = latest[kpi.key];
+                if (firstVal == null || latestVal == null) return '';
+                
+                const change = latestVal - firstVal;
+                const changePercent = ((change / firstVal) * 100).toFixed(1);
+                const isPositive = kpi.inverse ? change < 0 : change > 0;
+                
+                return `
+                    <div class="report-data-item">
+                        <div class="report-data-label">${kpi.label}</div>
+                        <div class="report-data-value">${latestVal}${kpi.unit}</div>
+                        <div class="report-improvement ${isPositive ? '' : 'negative'}">
+                            ${isPositive ? '▲' : '▼'} ${Math.abs(changePercent)}% from baseline
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createRadarChart(data) {
+            const ctx = document.getElementById('radarChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Balance', 'Flexibility', 'Core', 'Power', 'Coordination', 'Endurance'],
+                    datasets: [{
+                        label: 'Performance',
+                        data: [
+                            normalizeScore(data.singleLegStand, 60),
+                            normalizeScore(data.sitReach, 30),
+                            normalizeScore(data.plankTime, 120),
+                            normalizeScore(data.verticalJump, 60),
+                            normalizeScore(data.yBalanceAnt, 100),
+                            normalizeScore(data.tandemStance, 60)
+                        ],
+                        backgroundColor: 'rgba(26, 26, 26, 0.2)',
+                        borderColor: '#1a1a1a',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function createLineChart(measurements) {
+            const ctx = document.getElementById('lineChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: measurements.map((m, i) => `Session ${i + 1}`),
+                    datasets: [
+                        {
+                            label: 'Single Leg Stand',
+                            data: measurements.map(m => m.singleLegStand),
+                            borderColor: '#c41e3a',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Plank Time',
+                            data: measurements.map(m => m.plankTime),
+                            borderColor: '#1a1a1a',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Y-Balance Ant.',
+                            data: measurements.map(m => m.yBalanceAnt),
+                            borderColor: '#666666',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function createBarChart(data) {
+            const ctx = document.getElementById('barChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pain', 'Performance', 'Fatigue', 'Sleep', 'Soreness', 'Motivation'],
+                    datasets: [{
+                        label: 'VAS Score',
+                        data: [
+                            data.vasPain,
+                            data.vasPerformance,
+                            data.fatigue,
+                            data.sleepQuality,
+                            data.muscleSoreness,
+                            data.motivation
+                        ],
+                        backgroundColor: '#1a1a1a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        function normalizeScore(value, max) {
+            if (value == null) return 0;
+            return Math.min((value / max) * 100, 100);
+        }
+
+        function closeReport() {
+            const container = document.getElementById('reportContainer');
+            if (container) container.remove();
         }
     </script>
 </body>
