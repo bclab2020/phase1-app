@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 1 検証試験管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding-top: 220px;
+            letter-spacing: 0.3px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 固定ヘッダー - Diorスタイル */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 25px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            z-index: 1000;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        header h1 { 
+            font-size: 22px; 
+            margin-bottom: 5px;
+            text-align: center;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        header p {
+            font-size: 12px;
+            text-align: center;
+            color: #666666;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        header .subtitle-ja {
+            font-size: 10px;
+            text-align: center;
+            color: #999999;
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+            font-weight: 300;
+        }
+
+        /* 固定ナビゲーションバー - ミニマル */
+        .nav-tabs {
+            position: fixed;
+            top: 130px;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            z-index: 999;
+            overflow-x: auto;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .nav-tabs::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+            border-radius: 1px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 400;
+            color: #666666;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-tab:hover {
+            color: #1a1a1a;
+            background: #f5f5f5;
+        }
+
+        .nav-tab.active {
+            color: #1a1a1a;
+            border-bottom-color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        h2 { 
+            font-size: 20px; 
+            margin: 50px 0 30px 0; 
+            color: #1a1a1a;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            scroll-margin-top: 240px;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .section {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 2px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 30px;
+            scroll-margin-top: 240px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fafafa;
+            color: #1a1a1a;
+            padding: 30px;
+            border-radius: 2px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+            border-color: #cccccc;
+        }
+
+        .stat-card h3 { 
+            font-size: 11px; 
+            color: #666666; 
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+        
+        .stat-card p { 
+            font-size: 36px; 
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .test-info {
+            background: #f9f9f9;
+            border-left: 3px solid #1a1a1a;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 2px;
+        }
+
+        .test-info-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .test-info-image {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 2px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .test-icon {
+            width: 80px;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .test-icon svg {
+            width: 50px;
+            height: 50px;
+            fill: #ffffff;
+        }
+
+        .test-info-content {
+            flex: 1;
+        }
+
+        .test-info-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .test-info-description {
+            font-size: 12px;
+            color: #666666;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 400;
+            color: #1a1a1a;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        label .label-ja {
+            display: block;
+            font-size: 9px;
+            color: #999999;
+            margin-top: 3px;
+            letter-spacing: 0.5px;
+            text-transform: none;
+            font-weight: 300;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #cccccc;
+            border-radius: 2px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.8;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+        }
+
+        button {
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 400;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        button span {
+            display: block;
+            font-size: 9px;
+            margin-top: 3px;
+            letter-spacing: 0.5px;
+            font-weight: 300;
+            text-transform: none;
+        }
+
+        button:hover { 
+            background: #333333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:active { 
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #666666;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #555555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #1a1a1a;
+        }
+
+        th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #1a1a1a;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .success { color: #2d7a3e; font-weight: 500; }
+        .error { color: #c41e3a; font-weight: 500; }
+
+        .alert {
+            padding: 18px 24px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            display: none;
+            position: fixed;
+            top: 240px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 350px;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .alert.success {
+            background: #ffffff;
+            color: #2d7a3e;
+            border-color: #2d7a3e;
+        }
+
+        .alert.error {
+            background: #ffffff;
+            color: #c41e3a;
+            border-color: #c41e3a;
+        }
+
+        .alert.show { display: block; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 60px 0;
+        }
+
+        /* VASスライダー - エレガントスタイル */
+        input[type="range"] {
+            padding: 0;
+            height: 3px;
+            border: none;
+            background: #e0e0e0;
+            border-radius: 1px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #1a1a1a;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #1a1a1a;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .vas-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #999999;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 200px; }
+            .container { padding: 15px; }
+            header { padding: 20px; }
+            header h1 { font-size: 18px; }
+            .nav-tabs { top: 130px; }
+            .section { padding: 25px; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
+            h2 { scroll-margin-top: 220px; }
+            .section { scroll-margin-top: 220px; }
+            .alert { top: 210px; min-width: 90%; }
+        }
+        /* 折りたたみ式詳細解説 */
+        .test-detail-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            padding: 6px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .test-detail-toggle:hover {
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .test-detail-toggle .toggle-icon {
+            font-size: 10px;
+            color: #1a1a1a;
+            transition: transform 0.3s ease;
+            font-weight: 300;
+        }
+
+        .test-detail-toggle.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .test-detail-toggle .toggle-text {
+            font-size: 10px;
+            color: #666666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        .test-detail-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.4s ease;
+            opacity: 0;
+        }
+
+        .test-detail-content.active {
+            max-height: 1000px;
+            opacity: 1;
+            margin-bottom: 20px;
+        }
+
+        .test-info.collapsible {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Phase 1 Clinical Trial</h1>
+        <p>Mechanoreceptor Stimulation Patch — Athletic Performance Study</p>
+        <p class="subtitle-ja">Phase 1 検証試験 — メカノレセプター刺激パッチ・アスリート向け科学的検証</p>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" onclick="scrollToSection('dashboard')">Dashboard<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px;">ダッシュボード</span></button>
+        <button class="nav-tab" onclick="scrollToSection('subjects')">Subjects<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px;">被験者管理</span></button>
+        <button class="nav-tab" onclick="scrollToSection('measurements')">Measurements<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px;">測定データ</span></button>
+        <button class="nav-tab" onclick="scrollToSection('history')">Analysis<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px;">履歴・分析</span></button>
+        <button class="nav-tab" onclick="scrollToSection('export')">Export<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px;">データ出力</span></button>
+    </nav>
+
+    <div class="alert" id="alertBox"></div>
+
+    <div class="container">
+        <!-- ダッシュボード -->
+        <div id="dashboard" class="section">
+            <h2>Dashboard<span style="font-size: 10px; display: block; margin-top: 5px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">ダッシュボード</span></h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>Registered Subjects<span style="font-size: 8px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">登録被験者数</span></h3>
+                    <p id="totalSubjects">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Measurements<span style="font-size: 8px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">総測定回数</span></h3>
+                    <p id="totalMeasurements">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Improvement<span style="font-size: 8px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">平均改善率</span></h3>
+                    <p id="avgImprovement">—</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 被験者管理 -->
+        <div id="subjects" class="section">
+            <h2>Subject Management<span style="font-size: 10px; display: block; margin-top: 5px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">被験者管理</span></h2>
+            
+            <h3 style="margin-bottom: 25px;">New Registration<span style="font-size: 9px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">新規登録</span></h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Subject ID *<span class="label-ja">被験者ID</span></label>
+                    <input type="text" id="subjectId" placeholder="例: S001" required>
+                </div>
+                <div class="form-group">
+                    <label>Name *<span class="label-ja">氏名</span></label>
+                    <input type="text" id="subjectName" placeholder="例: 山田太郎" required>
+                </div>
+            </div>
+
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label>Date of Birth<span class="label-ja">生年月日</span></label>
+                    <input type="date" id="birthDate">
+                </div>
+                <div class="form-group">
+                    <label>Gender<span class="label-ja">性別</span></label>
+                    <select id="gender">
+                        <option value="">選択してください</option>
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sport<span class="label-ja">競技種目</span></label>
+                    <input type="text" id="sport" placeholder="例: サッカー">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dominant Hand<span class="label-ja">利き手</span></label>
+                    <select id="dominantHand">
+                        <option value="">選択してください</option>
+                        <option value="右">右</option>
+                        <option value="左">左</option>
+                        <option value="両利き">両利き</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dominant Foot<span class="label-ja">利き足</span></label>
+                    <select id="dominantFoot">
+                        <option value="">選択してください</option>
+                        <option value="右">右</option>
+                        <option value="左">左</option>
+                        <option value="両利き">両利き</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Sports History<span class="label-ja">競技歴</span></label>
+                <textarea id="sportsHistory" placeholder="例: サッカー 15年（小学校から現在まで）&#10;高校時代は県大会ベスト8&#10;現在は社会人チームで活動中"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Injury History<span class="label-ja">怪我の有無</span></label>
+                <textarea id="injuryHistory" placeholder="例: あり - 右膝前十字靭帯損傷（2年前）&#10;左足首捻挫（半年前）"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Surgery History<span class="label-ja">手術歴</span></label>
+                <textarea id="surgeryHistory" placeholder="例: 右膝前十字靭帯再建術（2年前、○○病院）&#10;なし"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Physical Issues<span class="label-ja">身体に抱えている問題</span></label>
+                <textarea id="physicalIssues" placeholder="例: 右膝の違和感（運動後に腫れやすい）&#10;腰痛（長時間の練習後）&#10;左足首の可動域制限"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Improvement Goals<span class="label-ja">改善したい課題</span></label>
+                <textarea id="improvementGoals" placeholder="例: バランス能力の向上&#10;膝の安定性改善&#10;疼痛の軽減&#10;パフォーマンス向上"></textarea>
+            </div>
+
+            <button onclick="addSubject()">Register Subject<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px; font-weight: 300;">被験者登録</span></button>
+
+            <h3 style="margin-top: 50px; margin-bottom: 25px;">Registered Subjects<span style="font-size: 9px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">登録済み被験者一覧</span></h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">ID</span></th>
+                            <th>Name<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">氏名</span></th>
+                            <th>Gender<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">性別</span></th>
+                            <th>Sport<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">競技</span></th>
+                            <th>Hand<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">利き手</span></th>
+                            <th>Foot<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">利き足</span></th>
+                            <th>Issues<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">課題</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjectsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 測定データ入力 -->
+        <div id="measurements" class="section">
+            <h2>Measurement Entry<span style="font-size: 10px; display: block; margin-top: 5px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">測定データ入力</span></h2>
+            <div class="form-group">
+                <label>Subject ID *<span class="label-ja">被験者ID</span></label>
+                <select id="measurementSubjectId" required></select>
+            </div>
+            <div class="form-group">
+                <label>Measurement Date *<span class="label-ja">測定日</span></label>
+                <input type="date" id="measurementDate" required>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="5" r="2"/>
+                            <path d="M12 8c-1 0-2 1-2 2v4h1v6h2v-6h1v-4c0-1-1-2-2-2z"/>
+                            <path d="M9 14l-2 5h1l2-4z" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Single Leg Stand Test (片足立ちテスト)</div>
+                        <p class="test-info-description">片足で立ち、バランスを保つ時間を測定します。反対側の足は地面から離し、手は腰に当てます。バランス能力と下肌安定性を評価します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Single Leg Stand (sec)<span class="label-ja">片足立ち時間</span></label>
+                <input type="number" id="singleLegStand" step="0.1" placeholder="例: 45.5">
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="4" r="2"/>
+                            <path d="M12 7v6M12 13l-4 4M12 13l4 4M12 13l0 6" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <path d="M8 17l-2 2M16 17l2 2M12 19v2" stroke="white" stroke-width="1" fill="none" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Y-Balance Test (Y-バランステスト)</div>
+                        <p class="test-info-description">片足立ちの状態で、前方・後外側・後内側の3方向にできるだけ遠く手を伸ばします。動的バランス、可動域、筋力を総合的に評価します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Y-Balance Anterior (cm)<span class="label-ja">Y-バランス前方</span></label>
+                <input type="number" id="yBalanceAnt" step="0.1" placeholder="例: 85.3">
+            </div>
+            <div class="form-group">
+                <label>Y-Balance Posterolateral (cm)<span class="label-ja">Y-バランス後外側</span></label>
+                <input type="number" id="yBalancePostLat" step="0.1" placeholder="例: 92.1">
+            </div>
+            <div class="form-group">
+                <label>Y-Balance Posteromedial (cm)<span class="label-ja">Y-バランス後内側</span></label>
+                <input type="number" id="yBalancePostMed" step="0.1" placeholder="例: 88.7">
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="18" cy="6" r="1.5"/>
+                            <rect x="6" y="10" width="12" height="3" rx="1"/>
+                            <rect x="6" y="10" width="2" height="7" rx="1"/>
+                            <rect x="16" y="10" width="2" height="7" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Plank Hold Time (プランクテスト)</div>
+                        <p class="test-info-description">肩の真下に肘をつき、つま先から頭まで一直線を保ちます。体幹の安定性と持久力を評価します。できるだけ長く保持します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Plank Hold Time (sec)<span class="label-ja">プランク保持時間</span></label>
+                <input type="number" id="plankTime" step="0.1" placeholder="例: 120.0">
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Balance Tests<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">バランステスト</span></h3>
+            <div class="test-info">
+                <div class="test-info-content" style="width: 100%;">
+                    <p class="test-info-description">以下のバランステストで、静的・動的な平衡感覚と姿勢制御能力を評価します。各テストで不安定な状態を作り、バランス能力を客観的に測定します。</p>
+                </div>
+            </div>
+            
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="5" r="2"/>
+                            <path d="M12 8c-1 0-2 1-2 2v3h4v-3c0-1-1-2-2-2z"/>
+                            <rect x="10" y="13" width="1.5" height="5"/>
+                            <rect x="12.5" y="13" width="1.5" height="5"/>
+                            <rect x="10" y="18" width="1.5" height="2" opacity="0.7"/>
+                            <rect x="12.5" y="19" width="1.5" height="1" opacity="0.7"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Tandem Stance (タンデム立位)</div>
+                        <p class="test-info-description">両足を前後に一直線に並べて立ちます。かかとつま先を接し、バランスを保持する時間を測定します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Tandem Stance (sec)<span class="label-ja">タンデム立位時間</span></label>
+                <input type="number" id="tandemStance" step="0.1" placeholder="例: 60.0">
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="5" r="2"/>
+                            <path d="M12 8c-1 0-2 1-2 2v3h4v-3c0-1-1-2-2-2z"/>
+                            <rect x="10.5" y="13" width="3" height="6"/>
+                            <path d="M9 10h-2M15 10h2" stroke="white" stroke-width="1.5" fill="none"/>
+                            <circle cx="11" cy="5" r="0.5" fill="#666"/>
+                            <circle cx="13" cy="5" r="0.5" fill="#666"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Romberg Test (ロンベルグテスト)</div>
+                        <p class="test-info-description">両足を揃えて目を閉じ、直立姿勢を保ちます。視覚情報なしでのバランス能力を評価します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Romberg Test (sec)<span class="label-ja">ロンベルグテスト</span></label>
+                <input type="number" id="rombergTest" step="0.1" placeholder="例: 30.0">
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="1.5"/>
+                            <line x1="12" y1="12" x2="12" y2="6" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="17" y2="9" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="18" y2="14" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="15" y2="18" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="9" y2="18" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="6" y2="14" stroke="white" stroke-width="1.5"/>
+                            <line x1="12" y1="12" x2="7" y2="9" stroke="white" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Star Excursion (スターエクスカーション)</div>
+                        <p class="test-info-description">片足立ちで中央に立ち、8方向にできるだけ遠く手を伸ばします。多方向の動的バランスを評価します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Star Excursion (cm)<span class="label-ja">スター到達距離</span></label>
+                <input type="number" id="starExcursion" step="0.1" placeholder="例: 75.5">
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Core & Strength<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">体幹・筋力テスト</span></h3>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="18" cy="8" r="1.5"/>
+                            <path d="M6 14h12l-1 4h-10z" transform="rotate(-15 12 14)"/>
+                            <rect x="5" y="12" width="2" height="6" transform="rotate(-15 6 15)"/>
+                            <rect x="17" y="12" width="2" height="6" transform="rotate(-15 18 15)"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Side Plank (サイドプランク)</div>
+                        <p class="test-info-description">横向きに寝て、肘と足で体を支えます。体幹側面の筋力と安定性を評価し、左右差も確認します。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Side Plank Left (sec)<span class="label-ja">サイドプランク左</span></label>
+                    <input type="number" id="sidePlankLeft" step="0.1" placeholder="例: 45.0">
+                </div>
+                <div class="form-group">
+                    <label>Side Plank Right (sec)<span class="label-ja">サイドプランク右</span></label>
+                    <input type="number" id="sidePlankRight" step="0.1" placeholder="例: 45.0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Single Leg Squat Left (reps)<span class="label-ja">片足スクワット左</span></label>
+                    <input type="number" id="singleSquatLeft" step="1" placeholder="例: 15">
+                </div>
+                <div class="form-group">
+                    <label>Single Leg Squat Right (reps)<span class="label-ja">片足スクワット右</span></label>
+                    <input type="number" id="singleSquatRight" step="1" placeholder="例: 15">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Push-ups (reps)<span class="label-ja">プッシュアップ回数</span></label>
+                <input type="number" id="pushups" step="1" placeholder="例: 30">
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Flexibility<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">柔軟性テスト</span></h3>
+            <div class="test-info">
+                <div class="test-info-content" style="width: 100%;">
+                    <p class="test-info-description">関節の可動域と筋肉の柔軟性を評価します。柔軟性の低下は怪我リスクを高めるため、定期的な評価が重要です。</p>
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('sitReachDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="sitReachDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 25px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🧘 Sit and Reach (座位体前屈)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 床に座り、両足を伸ばして前に出します。足底を箱または壁につけます。両手を重ね、膝を伸ばしたまま、ゆっくりと前屈してできるだけ遠くに手を伸ばします。2秒以上保持し、その距離を記録します。ウォーミングアップ後に実施します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> ハムストリングス、下背部、臀部の柔軟性を評価します。膝が曲がらないよう注意します。</p>
+                    <p class="test-info-description"><strong>評価基準:</strong><br>
+                    ・優秀: +15cm以上（足先を超える）<br>
+                    ・良好: +5cm～+15cm<br>
+                    ・普通: 0cm～+5cm（足先に届く）<br>
+                    ・要改善: 0cm未満（足先に届かない）<br>
+                    ・<strong>注意:</strong> 反動をつけたり、膝を曲げたりしないでください。静的なストレッチで測定します。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-group">
+                <label>Sit and Reach (cm)<span class="label-ja">座位体前屈</span></label>
+                <input type="number" id="sitReach" step="0.1" placeholder="例: 25.0">
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('shoulderFlexDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="shoulderFlexDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 20px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🙌 Shoulder Flexibility (肩関節可動域)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 直立姿勢で、一方の手を上から背中に回し、もう一方の手を下から背中に回します。両手で背中で握手しようとします。指先がどれだけ近づくか、または重なるかを測定します。左右両方の組み合わせ（右手上・左手上）を評価します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 肩関節の内旋・外旋可動域、肩甲骨の可動性、胸部の柔軟性を評価します。投球系や水泳選手に特に重要です。</p>
+                    <p class="test-info-description"><strong>評価基準:</strong><br>
+                    ・<strong>両手接触:</strong> 手のひらが重なる（優秀）<br>
+                    ・<strong>指先接触:</strong> 指先が触れる（良好）<br>
+                    ・<strong>10cm未満:</strong> 指先間の距離が10cm未満（普通）<br>
+                    ・<strong>10cm以上:</strong> 指先間の距離が10cm以上（要改善）<br>
+                    ・<strong>注意:</strong> 左右で大きな差がある場合は、インピンジメントの可能性があります。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Shoulder Flexibility Left<span class="label-ja">肩関節可動域左</span></label>
+                    <select id="shoulderFlexLeft">
+                        <option value="">選択してください</option>
+                        <option value="両手接触">両手接触</option>
+                        <option value="指先接触">指先接触</option>
+                        <option value="10cm未満">10cm未満</option>
+                        <option value="10cm以上">10cm以上</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Shoulder Flexibility Right<span class="label-ja">肩関節可動域右</span></label>
+                    <select id="shoulderFlexRight">
+                        <option value="">選択してください</option>
+                        <option value="両手接触">両手接触</option>
+                        <option value="指先接触">指先接触</option>
+                        <option value="10cm未満">10cm未満</option>
+                        <option value="10cm以上">10cm以上</option>
+                    </select>
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('ankleDorsiDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="ankleDorsiDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 20px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🦵 Ankle Dorsiflexion (足関節背屈)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 裸足で壁に向かって立ちます。測定する足を前に出し、かかとを床につけたまま膝を前方に曲げて壁に触れさせます。かかとが浮かない最大の位置で、つま先から壁までの距離を測定します。左右各脚3回測定し、最高値を記録します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 足関節の背屈可動域、下腿三頭筋（ふくらはぎ）の柔軟性、アキレス腱の柔軟性を評価します。スクワットやランニングのパフォーマンスに影響します。</p>
+                    <p class="test-info-description"><strong>評価基準:</strong><br>
+                    ・優秀: 12cm以上<br>
+                    ・良好: 10-12cm<br>
+                    ・普通: 8-10cm<br>
+                    ・要改善: 8cm未満<br>
+                    ・<strong>注意:</strong> かかとが浮かないように注意してください。足関節が硬いと膝や腰の怪我リスクが高まります。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ankle Dorsiflexion Left (cm)<span class="label-ja">足関節背屈左</span></label>
+                    <input type="number" id="ankleDorsiLeft" step="0.1" placeholder="例: 12.5">
+                </div>
+                <div class="form-group">
+                    <label>Ankle Dorsiflexion Right (cm)<span class="label-ja">足関節背屈右</span></label>
+                    <input type="number" id="ankleDorsiRight" step="0.1" placeholder="例: 12.5">
+                </div>
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Power & Agility<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">パワー・敏捷性テスト</span></h3>
+            <div class="test-info">
+                <div class="test-info-content" style="width: 100%;">
+                    <p class="test-info-description">爆発的な筋力発揮と、素早い動きを評価します。ジャンプ力やホップ距離は、競技パフォーマンスと直結します。</p>
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('verticalJumpDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="verticalJumpDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 25px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🚀 Vertical Jump (垂直跳び)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 壁の横に立ち、片手を上げて立位の到達点をマークします。両足でその場でジャンプし、最高地点で同じ手でタッチします。ジャンプ前に反動動作（腹を曲げて腕を振る）を使用して構いません。3回実施し、最高値を記録します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 下肢の爆発的パワー、神経筋の協調性、体幹の安定性を評価します。プライオメトリック能力の指標です。</p>
+                    <p class="test-info-description"><strong>参考値:</strong><br>
+                    ・男性アスリート: 50-70cm（競技により大きく異なる）<br>
+                    ・女性アスリート: 40-55cm（競技により大きく異なる）<br>
+                    ・<strong>注意:</strong> 着地時の衝撃を軽減するため、膝を曲げて柔らかく着地します。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-group">
+                <label>Vertical Jump (cm)<span class="label-ja">垂直跳び高</span></label>
+                <input type="number" id="verticalJump" step="0.1" placeholder="例: 55.0">
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('singleHopDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="singleHopDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 20px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🦘 Single Leg Hop (片足ホップ)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> スタートラインに片足で立ち、同じ足でできるだけ遠くに前方へホップし、着地地点でバランスを保ちます（2秒以上）。腰に手を置き、足を振り上げる動作は使用しません。左右各脚3回ずつ実施し、最高値を記録します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 片足の爆発力、着地時の安定性、左右差を評価します。左右の差が10%以上ある場合は注意が必要です。</p>
+                    <p class="test-info-description"><strong>参考値:</strong><br>
+                    ・男性アスリート: 150-180cm（競技により異なる）<br>
+                    ・女性アスリート: 120-150cm（競技により異なる）<br>
+                    ・<strong>Limb Symmetry Index (LSI):</strong> (左右対称性) = (低い方の距離 ÷ 高い方の距離) × 100% → 90%以上が望ましい<br>
+                    ・<strong>注意:</strong> 着地が不安定な場合、その試行は無効とします。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Single Leg Hop Left (cm)<span class="label-ja">片足ホップ左</span></label>
+                    <input type="number" id="singleHopLeft" step="0.1" placeholder="例: 120.0">
+                </div>
+                <div class="form-group">
+                    <label>Single Leg Hop Right (cm)<span class="label-ja">片足ホップ右</span></label>
+                    <input type="number" id="singleHopRight" step="0.1" placeholder="例: 120.0">
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('stepDownDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="stepDownDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 20px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">📦 Step Down Test (ステップダウンテスト)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 20cmの台の上に片足で立ちます。反対側の足をコントロールしながらゆっくりと床に向かって下ろし、かかとが軽く床に触れたらすぐに戻します。30秒間で何回できるか測定します。腰に手を置き、体幹を垂直に保ちます。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 支持脚の遠心性コントロール、膝の安定性、骨盤のアライメントを評価します。膝が内側に倒れる動き（knee valgus）に注意します。</p>
+                    <p class="test-info-description"><strong>参考値:</strong><br>
+                    ・優: 25回以上/30秒<br>
+                    ・良: 20-24回/30秒<br>
+                    ・可: 15-19回/30秒<br>
+                    ・要改善: 15回未満/30秒<br>
+                    ・<strong>注意:</strong> 下降時に骨盤が倒れる、膝が内側に入る、体が前後に揺れる場合は、動作の質に問題があります。</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-group">
+                <label>Step Down Test (reps/30s)<span class="label-ja">ステップダウン回数</span></label>
+                <input type="number" id="stepDown" step="1" placeholder="例: 25">
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Functional Movement<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">機能的動作評価</span></h3>
+            <div class="test-info">
+                <div class="test-info-content" style="width: 100%;">
+                    <p class="test-info-description">FMS風の動作スクリーニングで、動作の質を0～3点で評価します。0＝痛み、3＝完璧。動作パターンの不均衡や代償動作を検出します。</p>
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('deepSquatDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="deepSquatDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 25px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🏋️ Deep Squat (ディープスクワット)</div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 両足を肩幅に開き、つま先を前方に向けます。両腕を頭上に伸ばし、肩甲骨を対称に保ちながらできるだけ深くしゃがみます。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 股関節・膝・足首の可動域、上半身の安定性、体幹のコントロールを総合的に評価します。</p>
+                    <p class="test-info-description"><strong>採点基準:</strong><br>
+                    ・<strong>3点:</strong> 太ももが床面と平行、膝がつま先を超えず、上半身が縦方向、棒が足の上に保持<br>
+                    ・<strong>2点:</strong> 太ももが床面と平行、かかとで補助が必要<br>
+                    ・<strong>1点:</strong> 太ももが床面と平行にならない<br>
+                    ・<strong>0点:</strong> 動作中に痛みがある</p>
+                </div>
+            </div>
+
+                        <div class="test-detail-toggle" onclick="toggleDetail('inlineLungeDetail')">
+                <span class="toggle-icon">▼</span>
+                <span class="toggle-text">詳細を見る</span>
+            </div>
+            <div id="inlineLungeDetail" class="test-detail-content">
+                <div class="test-info" style="margin-top: 20px; background-color: #fafafa; border-left: 3px solid #1a1a1a;">
+                <div class="test-info-content" style="width: 100%;">
+                    <div class="test-info-title" style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">🧘 Inline Lunge (インラインランジ)</div>
+            </div>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>テスト方法:</strong> 一直線上に前後の足を置き(すね長の距離)、両腕を背中の後ろで保持し、後ろの膝が床に触れるまで体を下げます。左右両方を評価します。</p>
+                    <p class="test-info-description" style="margin-bottom: 8px;"><strong>評価ポイント:</strong> 前後方向のバランス、体幹の安定性、膝と足首の柔軟性、左右差を確認します。</p>
+                    <p class="test-info-description"><strong>採点基準:</strong><br>
+                    ・<strong>3点:</strong> バーが垂直、後ろの膝が前のかかとに触れる、足が一直線上<br>
+                    ・<strong>2点:</strong> ランジを完了できるが、アライメントが不完全<br>
+                    ・<strong>1点:</strong> 動作を完了できない、またはバランスを失う<br>
+                    ・<strong>0点:</strong> 動作中に痛みがある</p>
+                </div>
+            </div>
+            </div>
+            <div class="form-row" style="margin-top: 25px;">
+                <div class="form-group">
+                    <label>Deep Squat Score (0-3)<span class="label-ja">ディープスクワット</span></label>
+                    <select id="deepSquat">
+                        <option value="">選択</option>
+                        <option value="0">0点</option>
+                        <option value="1">1点</option>
+                        <option value="2">2点</option>
+                        <option value="3">3点</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Inline Lunge Score (0-3)<span class="label-ja">インラインランジ</span></label>
+                    <select id="inlineLunge">
+                        <option value="">選択</option>
+                        <option value="0">0点</option>
+                        <option value="1">1点</option>
+                        <option value="2">2点</option>
+                        <option value="3">3点</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3 style="margin: 40px 0 25px 0;">Subjective Scales<span style="font-size: 9px; display: block; margin-top: 3px; color: #999999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">主観的評価スケール</span></h3>
+            <div class="test-info">
+                <div class="test-info-content" style="width: 100%;">
+                    <p class="test-info-description">アスリート自身の主観的な状態を記録します。0～10のスライダーで、疼痛・疲労・睡眠・モチベーションなどを評価。コンディション管理に有用です。</p>
+                </div>
+            </div>
+            
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 12h18" stroke="white" stroke-width="2"/>
+                            <circle cx="6" cy="12" r="2" fill="white"/>
+                            <circle cx="12" cy="12" r="2" fill="white" opacity="0.6"/>
+                            <circle cx="18" cy="12" r="2" fill="white" opacity="0.3"/>
+                            <text x="3" y="8" font-size="4" fill="white">0</text>
+                            <text x="19" y="8" font-size="4" fill="white">10</text>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">VAS Pain (疼痛スケール)</div>
+                        <p class="test-info-description">現在の痛みのレベルを0(痛みなし)～10(最悪の痛み)で評価します。痛みの変化を追跡します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>VAS Pain (0-10): <span id="vasPainValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">疼痛スケール</span></label>
+                <input type="range" id="vasPain" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: No Pain</span>
+                    <span>10: Worst Pain</span>
+                </div>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="8" stroke="white" stroke-width="1.5" fill="none"/>
+                            <path d="M12 6v6l4 4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="1" fill="white"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">VAS Performance (パフォーマンススケール)</div>
+                        <p class="test-info-description">現在のパフォーマンス状態を0(最低)～10(最高)で評価します。競技パフォーマンスの自己評価です。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>VAS Performance (0-10): <span id="vasPerformanceValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">パフォーマンススケール</span></label>
+                <input type="range" id="vasPerformance" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: Worst</span>
+                    <span>10: Best</span>
+                </div>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 14c0-3 3-6 6-6s6 3 6 6" stroke="white" stroke-width="1.5" fill="none"/>
+                            <circle cx="9" cy="10" r="1" fill="white"/>
+                            <circle cx="15" cy="10" r="1" fill="white"/>
+                            <path d="M8 14h8" stroke="white" stroke-width="1" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Fatigue Scale (疲労度)</div>
+                        <p class="test-info-description">全身の疲労度を0(疲労なし)～10(極度の疲労)で評価します。オーバートレーニングの早期発見に役立ちます。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Fatigue (0-10): <span id="fatigueValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">疲労度</span></label>
+                <input type="range" id="fatigue" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: No Fatigue</span>
+                    <span>10: Extreme Fatigue</span>
+                </div>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 12c0-3 2-5 6-5s6 2 6 5v6H6v-6z" stroke="white" stroke-width="1.5" fill="none"/>
+                            <circle cx="9" cy="10" r="0.8" fill="white"/>
+                            <circle cx="15" cy="10" r="0.8" fill="white"/>
+                            <path d="M9 14c1 1 2 1 3 1s2 0 3-1" stroke="white" stroke-width="1" fill="none" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Sleep Quality (睡眠質)</div>
+                        <p class="test-info-description">前夜の睡眠の質を0(最悪)～10(最高)で評価します。回復状態の重要指標です。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Sleep Quality (0-10): <span id="sleepQualityValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">睡眠質</span></label>
+                <input type="range" id="sleepQuality" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: Worst</span>
+                    <span>10: Best</span>
+                </div>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 10l4-4 4 4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <path d="M8 14l4 4 4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="1.5" fill="white" opacity="0.7"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Muscle Soreness (筋肉痛)</div>
+                        <p class="test-info-description">筋肉痛の程度を0(痛みなし)～10(激痛)で評価します。トレーニング負荷の適正判断に使用します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Muscle Soreness (0-10): <span id="muscleSorenessValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">筋肉痛</span></label>
+                <input type="range" id="muscleSoreness" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: No Soreness</span>
+                    <span>10: Severe Soreness</span>
+                </div>
+            </div>
+            <div class="test-info">
+                <div class="test-info-header">
+                    <div class="test-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="12,5 15,10 20,11 16,15 17,20 12,17 7,20 8,15 4,11 9,10" fill="white" opacity="0.9"/>
+                            <circle cx="12" cy="12" r="2" fill="#1a1a1a"/>
+                        </svg>
+                    </div>
+                    <div class="test-info-content">
+                        <div class="test-info-title">Motivation (モチベーション)</div>
+                        <p class="test-info-description">トレーニングへの意欲を0(低い)～10(非常に高い)で評価します。心理状態の把握に重要です。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Motivation (0-10): <span id="motivationValue" style="color: #1a1a1a; font-weight: 500;">5</span><span class="label-ja">モチベーション</span></label>
+                <input type="range" id="motivation" min="0" max="10" value="5" step="1">
+                <div class="vas-labels">
+                    <span>0: No Motivation</span>
+                    <span>10: Highly Motivated</span>
+                </div>
+            </div>
+            <button onclick="addMeasurement()">Save Measurement<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px; font-weight: 300;">測定データ保存</span></button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 履歴・分析 -->
+        <div id="history" class="section">
+            <h2>Measurement History<span style="font-size: 10px; display: block; margin-top: 5px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">測定履歴・分析</span></h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">測定日</span></th>
+                            <th>Subject<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">被験者</span></th>
+                            <th>Single Leg<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">片足立ち</span></th>
+                            <th>VAS Pain<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">疼痛</span></th>
+                            <th>VAS Perf.<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">パフォーマンス</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+
+            <h3 style="margin-top: 50px; margin-bottom: 25px;">Improvement Analysis<span style="font-size: 9px; display: block; margin-top: 3px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">改善率分析</span></h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">被験者</span></th>
+                            <th>Single Leg<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">片足立ち</span></th>
+                            <th>Y-Balance Ant.<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">Y-前方</span></th>
+                            <th>Plank<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">プランク</span></th>
+                            <th>VAS Pain<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">疼痛</span></th>
+                            <th>VAS Perf.<span style="font-size: 8px; display: block; margin-top: 2px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">パフォーマンス</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- データ出力 -->
+        <div id="export" class="section">
+            <h2>Data Export<span style="font-size: 10px; display: block; margin-top: 5px; color: #999; letter-spacing: 0.5px; font-weight: 300; text-transform: none;">データ出力</span></h2>
+            <p style="margin-bottom: 25px; color: #666; font-size: 13px;">Export data in CSV format for external analysis.</p>
+            
+            <button onclick="exportCSV('subjects')" style="margin: 10px;">Subject List<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px; font-weight: 300;">被験者リスト</span></button>
+            <button onclick="exportCSV('measurements')" style="margin: 10px;">Measurement Data<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px; font-weight: 300;">測定データ</span></button>
+            <button onclick="exportCSV('integrated')" style="margin: 10px;" class="btn-secondary">Integrated Data<span style="font-size: 9px; display: block; margin-top: 2px; letter-spacing: 0.5px; font-weight: 300;">統合データ</span></button>
+        </div>
+    </div>
+
+    <script>
+        let db = null;
+        let dbReady = false;
+
+        // スムーズスクロール
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+            }
+        }
+
+        // スクロール位置に応じてアクティブタブを更新
+        window.addEventListener('scroll', () => {
+            const sections = ['dashboard', 'subjects', 'measurements', 'history', 'export'];
+            let current = '';
+
+            sections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top <= 250 && rect.bottom >= 250) {
+                        current = sectionId;
+                    }
+                }
+            });
+
+            if (current) {
+                document.querySelectorAll('.nav-tab').forEach((tab, index) => {
+                    tab.classList.remove('active');
+                    if (sections[index] === current) {
+                        tab.classList.add('active');
+                    }
+                });
+            }
+        });
+
+        // アラート表示
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert ${type} show`;
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 3000);
+        }
+
+        // VASスライダーの値表示更新
+        document.addEventListener('DOMContentLoaded', () => {
+            const sliders = [
+                { id: 'vasPain', valueId: 'vasPainValue' },
+                { id: 'vasPerformance', valueId: 'vasPerformanceValue' },
+                { id: 'fatigue', valueId: 'fatigueValue' },
+                { id: 'sleepQuality', valueId: 'sleepQualityValue' },
+                { id: 'muscleSoreness', valueId: 'muscleSorenessValue' },
+                { id: 'motivation', valueId: 'motivationValue' }
+            ];
+
+            sliders.forEach(slider => {
+                const element = document.getElementById(slider.id);
+                const valueElement = document.getElementById(slider.valueId);
+                if (element && valueElement) {
+                    element.addEventListener('input', (e) => {
+                        valueElement.textContent = e.target.value;
+                    });
+                }
+            });
+        });
+
+        // データベース初期化
+        function initDB() {
+            console.log('データベース初期化開始');
+            
+            const request = indexedDB.open('phase1TrialDB', 3);
+
+            request.onerror = () => {
+                console.error('DB初期化エラー');
+                showAlert('Database initialization failed. Please try a different browser.', 'error');
+            };
+
+            request.onupgradeneeded = (e) => {
+                console.log('DB構造作成中');
+                db = e.target.result;
+
+                if (!db.objectStoreNames.contains('subjects')) {
+                    db.createObjectStore('subjects', { keyPath: 'id' });
+                }
+
+                if (!db.objectStoreNames.contains('measurements')) {
+                    const measurementStore = db.createObjectStore('measurements', { keyPath: 'id', autoIncrement: true });
+                    measurementStore.createIndex('subjectId', 'subjectId', { unique: false });
+                }
+            };
+
+            request.onsuccess = (e) => {
+                db = e.target.result;
+                dbReady = true;
+                console.log('DB初期化完了');
+                loadDashboard();
+                loadSubjects();
+                loadHistory();
+                calculateAnalysis();
+            };
+        }
+
+        // ダッシュボード更新
+        function loadDashboard() {
+            if (!dbReady) return;
+
+            const tx = db.transaction(['subjects', 'measurements'], 'readonly');
+            
+            tx.objectStore('subjects').count().onsuccess = (e) => {
+                document.getElementById('totalSubjects').textContent = e.target.result;
+            };
+
+            tx.objectStore('measurements').count().onsuccess = (e) => {
+                document.getElementById('totalMeasurements').textContent = e.target.result;
+            };
+        }
+
+        // 被験者追加
+        function addSubject() {
+            const id = document.getElementById('subjectId').value.trim();
+            const name = document.getElementById('subjectName').value.trim();
+
+            if (!id || !name) {
+                showAlert('Subject ID and Name are required.', 'error');
+                return;
+            }
+
+            const subject = {
+                id,
+                name,
+                birthDate: document.getElementById('birthDate').value,
+                gender: document.getElementById('gender').value,
+                sport: document.getElementById('sport').value,
+                dominantHand: document.getElementById('dominantHand').value,
+                dominantFoot: document.getElementById('dominantFoot').value,
+                sportsHistory: document.getElementById('sportsHistory').value,
+                injuryHistory: document.getElementById('injuryHistory').value,
+                surgeryHistory: document.getElementById('surgeryHistory').value,
+                physicalIssues: document.getElementById('physicalIssues').value,
+                improvementGoals: document.getElementById('improvementGoals').value,
+                registeredAt: new Date().toISOString()
+            };
+
+            const tx = db.transaction(['subjects'], 'readwrite');
+            const request = tx.objectStore('subjects').add(subject);
+
+            request.onsuccess = () => {
+                showAlert('Subject registered successfully.');
+                clearSubjectForm();
+                loadSubjects();
+                loadDashboard();
+            };
+
+            request.onerror = () => {
+                showAlert('Registration failed (ID may already exist).', 'error');
+            };
+        }
+
+        function clearSubjectForm() {
+            document.getElementById('subjectId').value = '';
+            document.getElementById('subjectName').value = '';
+            document.getElementById('birthDate').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('sport').value = '';
+            document.getElementById('dominantHand').value = '';
+            document.getElementById('dominantFoot').value = '';
+            document.getElementById('sportsHistory').value = '';
+            document.getElementById('injuryHistory').value = '';
+            document.getElementById('surgeryHistory').value = '';
+            document.getElementById('physicalIssues').value = '';
+            document.getElementById('improvementGoals').value = '';
+        }
+
+        // 被験者一覧読込
+        function loadSubjects() {
+            if (!dbReady) return;
+
+            const tbody = document.getElementById('subjectsTableBody');
+            const select = document.getElementById('measurementSubjectId');
+            tbody.innerHTML = '';
+            select.innerHTML = '<option value="">選択してください</option>';
+
+            const tx = db.transaction(['subjects'], 'readonly');
+            tx.objectStore('subjects').openCursor().onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    const s = cursor.value;
+                    const shortIssues = s.physicalIssues ? (s.physicalIssues.length > 50 ? s.physicalIssues.substring(0, 50) + '...' : s.physicalIssues) : '—';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${s.id}</td>
+                            <td>${s.name}</td>
+                            <td>${s.gender || '—'}</td>
+                            <td>${s.sport || '—'}</td>
+                            <td>${s.dominantHand || '—'}</td>
+                            <td>${s.dominantFoot || '—'}</td>
+                            <td title="${s.physicalIssues || ''}">${shortIssues}</td>
+                        </tr>
+                    `;
+                    select.innerHTML += `<option value="${s.id}">${s.id} — ${s.name}</option>`;
+                    cursor.continue();
+                }
+            };
+        }
+
+        // 測定データ追加
+        function addMeasurement() {
+            const subjectId = document.getElementById('measurementSubjectId').value;
+            const date = document.getElementById('measurementDate').value;
+
+            if (!subjectId || !date) {
+                showAlert('Subject ID and Date are required.', 'error');
+                return;
+            }
+
+            const measurement = {
+                subjectId,
+                date,
+                // 既存の項目
+                singleLegStand: parseFloat(document.getElementById('singleLegStand').value) || null,
+                yBalanceAnt: parseFloat(document.getElementById('yBalanceAnt').value) || null,
+                yBalancePostLat: parseFloat(document.getElementById('yBalancePostLat').value) || null,
+                yBalancePostMed: parseFloat(document.getElementById('yBalancePostMed').value) || null,
+                plankTime: parseFloat(document.getElementById('plankTime').value) || null,
+                // バランステスト
+                tandemStance: parseFloat(document.getElementById('tandemStance').value) || null,
+                rombergTest: parseFloat(document.getElementById('rombergTest').value) || null,
+                starExcursion: parseFloat(document.getElementById('starExcursion').value) || null,
+                // 体幹・筋力
+                sidePlankLeft: parseFloat(document.getElementById('sidePlankLeft').value) || null,
+                sidePlankRight: parseFloat(document.getElementById('sidePlankRight').value) || null,
+                singleSquatLeft: parseInt(document.getElementById('singleSquatLeft').value) || null,
+                singleSquatRight: parseInt(document.getElementById('singleSquatRight').value) || null,
+                pushups: parseInt(document.getElementById('pushups').value) || null,
+                // 柔軟性
+                sitReach: parseFloat(document.getElementById('sitReach').value) || null,
+                shoulderFlexLeft: document.getElementById('shoulderFlexLeft').value || null,
+                shoulderFlexRight: document.getElementById('shoulderFlexRight').value || null,
+                ankleDorsiLeft: parseFloat(document.getElementById('ankleDorsiLeft').value) || null,
+                ankleDorsiRight: parseFloat(document.getElementById('ankleDorsiRight').value) || null,
+                // パワー・敏捷性
+                verticalJump: parseFloat(document.getElementById('verticalJump').value) || null,
+                singleHopLeft: parseFloat(document.getElementById('singleHopLeft').value) || null,
+                singleHopRight: parseFloat(document.getElementById('singleHopRight').value) || null,
+                stepDown: parseInt(document.getElementById('stepDown').value) || null,
+                // 機能的動作
+                deepSquat: document.getElementById('deepSquat').value || null,
+                hurdleStep: document.getElementById('hurdleStep').value || null,
+                inlineLunge: document.getElementById('inlineLunge').value || null,
+                // 主観的評価
+                vasPain: parseInt(document.getElementById('vasPain').value),
+                vasPerformance: parseInt(document.getElementById('vasPerformance').value),
+                fatigue: parseInt(document.getElementById('fatigue').value),
+                sleepQuality: parseInt(document.getElementById('sleepQuality').value),
+                muscleSoreness: parseInt(document.getElementById('muscleSoreness').value),
+                motivation: parseInt(document.getElementById('motivation').value),
+                timestamp: new Date().toISOString()
+            };
+
+            const tx = db.transaction(['measurements'], 'readwrite');
+            tx.objectStore('measurements').add(measurement).onsuccess = () => {
+                showAlert('Measurement saved successfully.');
+                clearMeasurementForm();
+                loadDashboard();
+                loadHistory();
+                calculateAnalysis();
+                scrollToSection('dashboard');
+            };
+        }
+
+        function clearMeasurementForm() {
+            document.getElementById('measurementDate').value = '';
+            // 既存の項目
+            document.getElementById('singleLegStand').value = '';
+            document.getElementById('yBalanceAnt').value = '';
+            document.getElementById('yBalancePostLat').value = '';
+            document.getElementById('yBalancePostMed').value = '';
+            document.getElementById('plankTime').value = '';
+            // バランステスト
+            document.getElementById('tandemStance').value = '';
+            document.getElementById('rombergTest').value = '';
+            document.getElementById('starExcursion').value = '';
+            // 体幹・筋力
+            document.getElementById('sidePlankLeft').value = '';
+            document.getElementById('sidePlankRight').value = '';
+            document.getElementById('singleSquatLeft').value = '';
+            document.getElementById('singleSquatRight').value = '';
+            document.getElementById('pushups').value = '';
+            // 柔軟性
+            document.getElementById('sitReach').value = '';
+            document.getElementById('shoulderFlexLeft').value = '';
+            document.getElementById('shoulderFlexRight').value = '';
+            document.getElementById('ankleDorsiLeft').value = '';
+            document.getElementById('ankleDorsiRight').value = '';
+            // パワー・敏捷性
+            document.getElementById('verticalJump').value = '';
+            document.getElementById('singleHopLeft').value = '';
+            document.getElementById('singleHopRight').value = '';
+            document.getElementById('stepDown').value = '';
+            // 機能的動作
+            document.getElementById('deepSquat').value = '';
+            document.getElementById('hurdleStep').value = '';
+            document.getElementById('inlineLunge').value = '';
+            // スライダーリセット
+            const sliders = ['vasPain', 'vasPerformance', 'fatigue', 'sleepQuality', 'muscleSoreness', 'motivation'];
+            sliders.forEach(id => {
+                document.getElementById(id).value = '5';
+                document.getElementById(id + 'Value').textContent = '5';
+            });
+        }
+
+        // 履歴表示
+        function loadHistory() {
+            if (!dbReady) return;
+
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            const tx = db.transaction(['measurements', 'subjects'], 'readonly');
+            const measurements = [];
+
+            tx.objectStore('measurements').openCursor().onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    measurements.push(cursor.value);
+                    cursor.continue();
+                } else {
+                    measurements.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    measurements.forEach(m => {
+                        tx.objectStore('subjects').get(m.subjectId).onsuccess = (e2) => {
+                            const subject = e2.target.result;
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${m.date}</td>
+                                    <td>${subject ? subject.name : '—'}</td>
+                                    <td>${m.singleLegStand !== null ? m.singleLegStand.toFixed(1) : '—'}</td>
+                                    <td>${m.vasPain !== null ? m.vasPain : '—'}</td>
+                                    <td>${m.vasPerformance !== null ? m.vasPerformance : '—'}</td>
+                                </tr>
+                            `;
+                        };
+                    });
+                }
+            };
+        }
+
+        // 改善率計算
+        function calculateAnalysis() {
+            if (!dbReady) return;
+
+            const tbody = document.getElementById('analysisTableBody');
+            tbody.innerHTML = '';
+
+            const tx = db.transaction(['measurements', 'subjects'], 'readonly');
+            const subjectData = {};
+
+            tx.objectStore('measurements').openCursor().onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    const m = cursor.value;
+                    if (!subjectData[m.subjectId]) subjectData[m.subjectId] = [];
+                    subjectData[m.subjectId].push(m);
+                    cursor.continue();
+                } else {
+                    for (const sid in subjectData) {
+                        const data = subjectData[sid].sort((a, b) => new Date(a.date) - new Date(b.date));
+                        if (data.length < 2) continue;
+
+                        const first = data[0];
+                        const last = data[data.length - 1];
+
+                        const calcRate = (f, l) => {
+                            if (f === null || l === null || f === 0) return null;
+                            return ((l - f) / f * 100).toFixed(1);
+                        };
+
+                        const formatRate = (r) => {
+                            if (r === null) return '—';
+                            const val = parseFloat(r);
+                            const cls = val >= 0 ? 'success' : 'error';
+                            return `<span class="${cls}">${val >= 0 ? '+' : ''}${r}%</span>`;
+                        };
+
+                        tx.objectStore('subjects').get(sid).onsuccess = (e2) => {
+                            const subject = e2.target.result;
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${subject ? subject.name : '—'}</td>
+                                    <td>${formatRate(calcRate(first.singleLegStand, last.singleLegStand))}</td>
+                                    <td>${formatRate(calcRate(first.yBalanceAnt, last.yBalanceAnt))}</td>
+                                    <td>${formatRate(calcRate(first.plankTime, last.plankTime))}</td>
+                                    <td>${formatRate(calcRate(first.vasPain, last.vasPain))}</td>
+                                    <td>${formatRate(calcRate(first.vasPerformance, last.vasPerformance))}</td>
+                                </tr>
+                            `;
+                        };
+                    }
+                }
+            };
+        }
+
+        // CSV出力
+        function exportCSV(type) {
+            if (!dbReady) return;
+
+            const tx = db.transaction(['measurements', 'subjects'], 'readonly');
+            let csvContent = '';
+
+            if (type === 'subjects') {
+                csvContent = 'ID,Name,DOB,Gender,Sport,Dominant Hand,Dominant Foot,Sports History,Injury History,Surgery History,Physical Issues,Improvement Goals,Registered At\n';
+                tx.objectStore('subjects').openCursor().onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        const s = cursor.value;
+                        const row = [
+                            s.id,
+                            s.name,
+                            s.birthDate || '',
+                            s.gender || '',
+                            s.sport || '',
+                            s.dominantHand || '',
+                            s.dominantFoot || '',
+                            `"${(s.sportsHistory || '').replace(/"/g, '""')}"`,
+                            `"${(s.injuryHistory || '').replace(/"/g, '""')}"`,
+                            `"${(s.surgeryHistory || '').replace(/"/g, '""')}"`,
+                            `"${(s.physicalIssues || '').replace(/"/g, '""')}"`,
+                            `"${(s.improvementGoals || '').replace(/"/g, '""')}"`,
+                            s.registeredAt
+                        ].join(',');
+                        csvContent += row + '\n';
+                        cursor.continue();
+                    } else {
+                        downloadCSV(csvContent, 'subjects.csv');
+                    }
+                };
+            } else if (type === 'measurements') {
+                csvContent = 'Subject ID,Date,Single Leg Stand,Y-Balance Ant,Y-Balance Post-Lat,Y-Balance Post-Med,Plank,Tandem Stance,Romberg,Star Excursion,Side Plank L,Side Plank R,Single Squat L,Single Squat R,Pushups,Sit Reach,Shoulder Flex L,Shoulder Flex R,Ankle Dorsi L,Ankle Dorsi R,Vertical Jump,Single Hop L,Single Hop R,Step Down,Deep Squat,Hurdle Step,Inline Lunge,VAS Pain,VAS Performance,Fatigue,Sleep Quality,Muscle Soreness,Motivation\n';
+                tx.objectStore('measurements').openCursor().onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        const m = cursor.value;
+                        csvContent += `${m.subjectId},${m.date},${m.singleLegStand || ''},${m.yBalanceAnt || ''},${m.yBalancePostLat || ''},${m.yBalancePostMed || ''},${m.plankTime || ''},${m.tandemStance || ''},${m.rombergTest || ''},${m.starExcursion || ''},${m.sidePlankLeft || ''},${m.sidePlankRight || ''},${m.singleSquatLeft || ''},${m.singleSquatRight || ''},${m.pushups || ''},${m.sitReach || ''},${m.shoulderFlexLeft || ''},${m.shoulderFlexRight || ''},${m.ankleDorsiLeft || ''},${m.ankleDorsiRight || ''},${m.verticalJump || ''},${m.singleHopLeft || ''},${m.singleHopRight || ''},${m.stepDown || ''},${m.deepSquat || ''},${m.hurdleStep || ''},${m.inlineLunge || ''},${m.vasPain || ''},${m.vasPerformance || ''},${m.fatigue || ''},${m.sleepQuality || ''},${m.muscleSoreness || ''},${m.motivation || ''}\n`;
+                        cursor.continue();
+                    } else {
+                        downloadCSV(csvContent, 'measurements.csv');
+                    }
+                };
+            } else if (type === 'integrated') {
+                csvContent = 'Subject ID,Name,Gender,Sport,Dominant Hand,Dominant Foot,Measurement Date,Single Leg Stand,Y-Balance Ant,Y-Balance Post-Lat,Y-Balance Post-Med,Plank,Tandem Stance,Romberg,Star Excursion,Side Plank L,Side Plank R,Single Squat L,Single Squat R,Pushups,Sit Reach,Shoulder Flex L,Shoulder Flex R,Ankle Dorsi L,Ankle Dorsi R,Vertical Jump,Single Hop L,Single Hop R,Step Down,Deep Squat,Hurdle Step,Inline Lunge,VAS Pain,VAS Performance,Fatigue,Sleep Quality,Muscle Soreness,Motivation,Sports History,Physical Issues,Goals\n';
+                const subjectMap = {};
+                
+                tx.objectStore('subjects').openCursor().onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        subjectMap[cursor.value.id] = cursor.value;
+                        cursor.continue();
+                    } else {
+                        tx.objectStore('measurements').openCursor().onsuccess = (e2) => {
+                            const cursor2 = e2.target.result;
+                            if (cursor2) {
+                                const m = cursor2.value;
+                                const subject = subjectMap[m.subjectId];
+                                const row = [
+                                    m.subjectId,
+                                    subject ? subject.name : '—',
+                                    subject?.gender || '',
+                                    subject?.sport || '',
+                                    subject?.dominantHand || '',
+                                    subject?.dominantFoot || '',
+                                    m.date,
+                                    m.singleLegStand || '',
+                                    m.yBalanceAnt || '',
+                                    m.yBalancePostLat || '',
+                                    m.yBalancePostMed || '',
+                                    m.plankTime || '',
+                                    m.tandemStance || '',
+                                    m.rombergTest || '',
+                                    m.starExcursion || '',
+                                    m.sidePlankLeft || '',
+                                    m.sidePlankRight || '',
+                                    m.singleSquatLeft || '',
+                                    m.singleSquatRight || '',
+                                    m.pushups || '',
+                                    m.sitReach || '',
+                                    m.shoulderFlexLeft || '',
+                                    m.shoulderFlexRight || '',
+                                    m.ankleDorsiLeft || '',
+                                    m.ankleDorsiRight || '',
+                                    m.verticalJump || '',
+                                    m.singleHopLeft || '',
+                                    m.singleHopRight || '',
+                                    m.stepDown || '',
+                                    m.deepSquat || '',
+                                    m.hurdleStep || '',
+                                    m.inlineLunge || '',
+                                    m.vasPain || '',
+                                    m.vasPerformance || '',
+                                    m.fatigue || '',
+                                    m.sleepQuality || '',
+                                    m.muscleSoreness || '',
+                                    m.motivation || '',
+                                    `"${(subject?.sportsHistory || '').replace(/"/g, '""')}"`,
+                                    `"${(subject?.physicalIssues || '').replace(/"/g, '""')}"`,
+                                    `"${(subject?.improvementGoals || '').replace(/"/g, '""')}"`
+                                ].join(',');
+                                csvContent += row + '\n';
+                                cursor2.continue();
+                            } else {
+                                downloadCSV(csvContent, 'integrated_data.csv');
+                            }
+                        };
+                    }
+                };
+            }
+        }
+
+        function downloadCSV(content, filename) {
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        // 初期化実行
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!window.indexedDB) {
+                showAlert('This browser does not support IndexedDB.', 'error');
+                return;
+            }
+            console.log('ページ読み込み完了、DB初期化開始');
+            initDB();
+        });
+
+        function toggleDetail(detailId) {
+            const detail = document.getElementById(detailId);
+            const toggle = event.currentTarget;
+            
+            detail.classList.toggle('active');
+            toggle.classList.toggle('active');
+            
+            if (detail.classList.contains('active')) {
+                toggle.querySelector('.toggle-text').textContent = '詳細を閉じる';
+            } else {
+                toggle.querySelector('.toggle-text').textContent = '詳細を見る';
+            }
+        }
+    </script>
+</body>
+</html>
